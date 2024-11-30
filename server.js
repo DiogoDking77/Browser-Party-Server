@@ -11,26 +11,11 @@ const app = express();
 
 const clientUrl = process.env.CLIENT_URL || 'https://browser-party-client.onrender.com';
 
-const allowedOrigins = [
-  'http://localhost:5173', // Para o ambiente de desenvolvimento
-  'https://browser-party-client.onrender.com' // Para o ambiente de produção
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    if (allowedOrigins.includes(origin) || !origin) {
-      // Permitir a origem se estiver na lista ou se for uma requisição sem origem (por exemplo, para o backend diretamente)
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-}));
-
+app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'clientUrl',
+    origin: clientUrl,
   },
 });
 
