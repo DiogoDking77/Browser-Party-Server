@@ -8,11 +8,14 @@ const { createRoom, joinRoom, leaveRoom, getRoomsList, getPlayersInRoom } = requ
 const { updateRoomsList } = require('./utils/socketHelpers');
 
 const app = express();
+
+const clientUrl = process.env.CLIENT_URL || 'http://localhost:3001';
+
 app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'https://browser-party-client.onrender.com',
+    origin: clientUrl,
   },
 });
 
