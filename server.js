@@ -2,6 +2,10 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const dotenv = require('dotenv');
+
+// Carregar variáveis de ambiente do .env
+dotenv.config();
 
 const Cliente = require('./models/client');
 const { createRoom, joinRoom, leaveRoom, getRoomsList, getPlayersInRoom } = require('./controllers/roomController');
