@@ -16,6 +16,35 @@ const createRoom = (roomName, socket, users) => {
   socket.emit('roomCreated', { roomName });
   return { success: true, message: 'Room created', room };
 };
+
+const getRoomData = (roomName, users) => {
+  const room = rooms.get(roomName);
+  if (!room) {
+    return { success: false, message: 'Room not found', roomData: null };
+  }
+
+  const players = room.currentPlayersIds.map(playerId => {
+    const user = users.get(playerId);
+    return {
+      id: playerId,
+      username: user ? user.username : 'Unknown Player',
+      clientColor: user ? user.clientColor : 'gray',
+      nCoins: user ? user.nCoins : 0,
+      nDiamonds: user ? user.nDiamonds : 0,
+      nMiniGamesWon: user ? user.nMiniGamesWon : 0,
+    };
+  });
+
+  const roomData = {
+    roomId: room.id,
+    adminPlayerId: room.adminPlayerId,
+    isOngoing: room.isOngoing,
+    currentRound: room.currentRound,
+    players,
+  };
+
+  return { success: true, message: 'Room data retrieved successfully', roomData };
+};
   
 const joinRoom = (roomName, socket, users) => {
   const room = rooms.get(roomName);
@@ -107,4 +136,5 @@ module.exports = {
   getRoomsList,
   rooms,
   getPlayersInRoom, // Adicione esta exportação
+  getRoomData
 };

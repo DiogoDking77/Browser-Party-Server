@@ -8,7 +8,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const Cliente = require('./models/client');
-const { createRoom, joinRoom, leaveRoom, getRoomsList, getPlayersInRoom } = require('./controllers/roomController');
+const { createRoom, joinRoom, leaveRoom, getRoomsList, getPlayersInRoom, getRoomData } = require('./controllers/roomController');
 const { updateRoomsList } = require('./utils/socketHelpers');
 
 const app = express();
@@ -55,6 +55,9 @@ io.on('connection', (socket) => {
       socket.join(roomName);
       socket.emit('roomJoined', roomName);
       updateRoomsList(io);
+
+      io.to(roomName).emit('updateRoomData', getRoomData(roomName, users));
+      
     } else {
       socket.emit('roomExists', result.message);
     }
@@ -68,7 +71,9 @@ io.on('connection', (socket) => {
         socket.join(roomName);
         socket.emit('roomJoined', roomName);
 
-        io.to(roomName).emit('updatePlayers', getPlayersInRoom(roomName, users).players);
+        io.to(roomName).emit('updateRoomData', getRoomData(roomName, users));
+
+        socket.emit('updateRoomData', getRoomData(roomName, users));
 
         io.to(roomName).emit('message', {
             userName: 'System',
@@ -87,7 +92,8 @@ io.on('connection', (socket) => {
     if (result.success) {
       updateRoomsList(io);
   
-      io.to(roomName).emit('updatePlayers', getPlayersInRoom(roomName, users).players); // Atualizar todos na sala
+
+      io.to(roomName).emit('updateRoomData', getRoomData(roomName, users));
   
       socket.emit('leftRoom', { roomName });
     } else {
@@ -112,24 +118,30 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     const username = users.get(socket.id)?.username || 'Unknown Player';
-
-    for (const room of getRoomsList()) {
-      if (room.players.includes(socket.id)) {
-        // Emitir mensagem de saída da sala
+  
+    // Verifica todas as salas
+    const rooms = getRoomsList();
+    for (const room of rooms) {
+      if (room.players && room.players.includes(socket.id)) {
+        // Emite a mensagem de saída
         io.to(room.name).emit('message', {
           userName: 'System',
           message: `${username} has left the room.`,
           isSystem: true,
         });
-
-        leaveRoom(room.name, socket);
+  
+        leaveRoom(room.name, socket);  // Remove o jogador da sala
       }
     }
-
+  
+    // Remove o usuário da lista de usuários
     users.delete(socket.id);
+  
+    // Atualiza a lista de salas
     updateRoomsList(io);
     console.log('User disconnected:', socket.id);
   });
+  
 });
 
-server.listen(3000, () => console.log('https://browser-party-client.onrender.com'));
+server.listen(3000, () => console.log('Servidor a correr, ligado a ' + clientUrl));
