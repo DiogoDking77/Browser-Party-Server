@@ -105,6 +105,10 @@ io.on('connection', (socket) => {
     io.to(roomName).emit('message', { userName, message });
   });
 
+  socket.on('adminStartGame', (roomName) => {
+    io.to(roomName).emit('startGame');
+  });
+
   socket.on('rollTheDice', ({ roomName, username }, callback) => {
     const rollResult = Math.floor(Math.random() * 6) + 1; // Gera um número entre 1 e 6
     console.log(`${username} rolled a ${rollResult} in room ${roomName}`);

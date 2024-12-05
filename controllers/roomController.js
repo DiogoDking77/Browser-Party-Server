@@ -37,7 +37,7 @@ const getRoomData = (roomName, users) => {
 
   const roomData = {
     roomId: room.id,
-    adminPlayerId: room.adminPlayerId,
+    adminPlayer: room.getAdminPlayer(users), // Retorna os dados do admin
     isOngoing: room.isOngoing,
     currentRound: room.currentRound,
     players,
@@ -45,6 +45,7 @@ const getRoomData = (roomName, users) => {
 
   return { success: true, message: 'Room data retrieved successfully', roomData };
 };
+
   
 const joinRoom = (roomName, socket, users) => {
   const room = rooms.get(roomName);
