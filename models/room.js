@@ -24,13 +24,13 @@ class Room {
         client.joinRoom(this.id, this.availableColors);
       }
     }
-  
+
     // Remove um jogador da sala
     removePlayer(playerId, users) {
       const index = this.currentPlayersIds.indexOf(playerId);
       if (index !== -1) {
         this.currentPlayersIds.splice(index, 1);
-  
+
         // Recuperar a cor do jogador ao sair da sala
         const client = users.get(playerId);
         if (client && client.clientColor) {
@@ -38,12 +38,18 @@ class Room {
           client.leaveRoom();
         }
       }
-  
+
       // Verificar se o admin saiu
       if (playerId === this.adminPlayerId && this.currentPlayersIds.length > 0) {
-        this.adminPlayerId = this.currentPlayersIds[0];
+        this.adminPlayerId = this.currentPlayersIds[0]; // Define o próximo jogador como admin
+      }
+
+      // Se não há mais jogadores, redefine o admin
+      if (this.currentPlayersIds.length === 0) {
+        this.adminPlayerId = null;
       }
     }
+
   
     // Retornar os dados do administrador
     getAdminPlayer(users) {
