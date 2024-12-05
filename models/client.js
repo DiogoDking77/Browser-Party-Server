@@ -2,6 +2,7 @@ class Client {
   constructor(id) {
       this.id = id;
       this.username = null;
+      this.avatar = null;
       this.currentRoomId = null;
       this.nCoins = null;
       this.nDiamonds = null;
