@@ -28,6 +28,7 @@ const getRoomData = (roomName, users) => {
     return {
       id: playerId,
       username: user ? user.username : 'Unknown Player',
+      avatar: user ? user.avatar : null,
       clientColor: user ? user.clientColor : 'gray',
       nCoins: user ? user.nCoins : 0,
       nDiamonds: user ? user.nDiamonds : 0,
@@ -109,6 +110,7 @@ const getPlayersInRoom = (roomName, users) => {
       return {
         id: playerId,
         username: user.username,
+        avatar: user?.avatar || null,
         clientColor: user.clientColor,
         currentRoomId: user.currentRoomId,
         nCoins: user.nCoins,

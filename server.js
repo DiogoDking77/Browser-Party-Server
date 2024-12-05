@@ -30,13 +30,16 @@ io.on('connection', (socket) => {
   const client = new Cliente(socket.id);
   users.set(socket.id, client);
 
-  socket.on('setUsername', (username, callback) => {
-    if ([...users.values()].some(user => user.username === username)) {
+  // Atualizado para receber o objeto { name, avatar }
+  socket.on('setUsername', ({ name, avatar }, callback) => {
+    if ([...users.values()].some(user => user.username === name)) {
       callback({ success: false, message: 'Username is already taken' });
     } else {
-      client.setUsername(username);
+      client.setUsername(name); // Define o nome do usuário
+      client.avatar = avatar; // Define o avatar do usuário
       callback({ success: true, message: 'Username set successfully' });
-      console.log(`${username} has joined the server with socket ID: ${socket.id}`);
+      console.log(`${name} has joined the server with socket ID: ${socket.id}`);
+      console.log(`${name} has joined with avatar ${avatar}`);
     }
   });
 
