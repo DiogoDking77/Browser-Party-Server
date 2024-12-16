@@ -8,7 +8,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const Cliente = require('./models/client');
-const { createRoom, joinRoom, leaveRoom, getRoomsList, getPlayersInRoom, getRoomData } = require('./controllers/roomController');
+const { getRoomByName, createRoom, joinRoom, leaveRoom, getRoomsList, getPlayersInRoom, getRoomData } = require('./controllers/roomController');
 const { updateRoomsList } = require('./utils/socketHelpers');
 
 const app = express();
@@ -109,7 +109,31 @@ io.on('connection', (socket) => {
   });
 
   socket.on('adminStartGame', (roomName) => {
-    io.to(roomName).emit('startGame');
+    const room = getRoomByName(roomName);
+    if (!room) {
+        socket.emit('error', 'Room not found'); // Apenas o admin recebe
+        return;
+    }
+
+    if (room.currentPlayersIds.length !== 4) {
+        socket.emit('error', 'Room must have exactly 4 players to start the game.'); // Apenas o admin recebe
+        return;
+    }
+
+    // Embaralhar a ordem dos jogadores
+    room.playerTurnOrder = room.playerTurnOrder.sort(() => Math.random() - 0.5);
+
+    // Atualizar o primeiro jogador no turno
+    room.currentPlayerTurn = room.playerTurnOrder[0];
+
+    // Emitir evento para iniciar o jogo
+
+    
+    console.log(room.playerTurnOrder)
+    io.to(roomName).emit('startGame', {
+      currentPlayerTurn: room.currentPlayerTurn,
+      playerTurnOrder: room.playerTurnOrder,
+    });
   });
 
   socket.on('rollTheDice', ({ roomName, username }, callback) => {

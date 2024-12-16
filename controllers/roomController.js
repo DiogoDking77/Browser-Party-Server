@@ -1,6 +1,8 @@
 const Room = require('../models/room');
 const rooms = new Map();
 
+const getRoomByName = (roomName) => rooms.get(roomName);
+
 const createRoom = (roomName, socket, users) => {
   if (rooms.has(roomName)) {
       return { success: false, message: 'Room already exists' };
@@ -133,6 +135,7 @@ const getPlayersInRoom = (roomName, users) => {
 
 
 module.exports = {
+  getRoomByName,
   createRoom,
   joinRoom,
   leaveRoom,
