@@ -76,23 +76,52 @@ class Room {
   }
 
   // Inicia a partida
-  startGame() {
-      this.isOngoing = true;
-      this.currentRound = 1;
-      this.currentPlayersIdsRank = [...this.currentPlayersIds];
-      this.playerTurnOrder = [...this.currentPlayersIds]; // Inicializar a ordem de turno
-      this.currentPlayerTurn = this.playerTurnOrder[0]; // Primeiro jogador da ordem inicia o turno
-  }
+  startGame(users) {
+    this.isOngoing = true;
+    this.currentRound = 1;
+    this.currentPlayersIdsRank = [...this.currentPlayersIds];
+    
+    // Embaralhar a ordem dos jogadores
+    this.playerTurnOrder = this.playerTurnOrder.sort(() => Math.random() - 0.5);
+    
+    // Atualizar o jogador atual com todos os dados
+    const currentPlayerId = this.playerTurnOrder[0];
+    const currentPlayer = users.get(currentPlayerId);
+    if (currentPlayer) {
+        this.currentPlayerTurn = {
+            id: currentPlayer.id,
+            username: currentPlayer.username,
+            clientColor: currentPlayer.clientColor,
+            nCoins: currentPlayer.nCoins,
+            nDiamonds: currentPlayer.nDiamonds,
+            nMiniGamesWon: currentPlayer.nMiniGamesWon
+        };
+    }
+}
+
 
   // Atualiza o próximo jogador no turno
-  nextTurn() {
-      if (this.playerTurnOrder.length > 0) {
-          // Atualizar para o próximo jogador
-          const currentIndex = this.playerTurnOrder.indexOf(this.currentPlayerTurn);
-          const nextIndex = (currentIndex + 1) % this.playerTurnOrder.length;
-          this.currentPlayerTurn = this.playerTurnOrder[nextIndex];
-      }
-  }
+  nextTurn(users) {
+    if (this.playerTurnOrder.length > 0) {
+        // Atualizar para o próximo jogador
+        const currentIndex = this.playerTurnOrder.indexOf(this.currentPlayerTurn.id); // Usamos o id aqui
+        const nextIndex = (currentIndex + 1) % this.playerTurnOrder.length;
+
+        const nextPlayerId = this.playerTurnOrder[nextIndex];
+        const nextPlayer = users.get(nextPlayerId);
+        if (nextPlayer) {
+            this.currentPlayerTurn = {
+                id: nextPlayer.id,
+                username: nextPlayer.username,
+                clientColor: nextPlayer.clientColor,
+                nCoins: nextPlayer.nCoins,
+                nDiamonds: nextPlayer.nDiamonds,
+                nMiniGamesWon: nextPlayer.nMiniGamesWon
+            };
+        }
+    }
+}
+
 
   // Termina a partida
   endGame() {

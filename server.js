@@ -8,7 +8,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const Cliente = require('./models/client');
-const { getRoomByName, createRoom, joinRoom, leaveRoom, getRoomsList, getPlayersInRoom, getRoomData } = require('./controllers/roomController');
+const { getRoomByName, createRoom, joinRoom, leaveRoom, getRoomsList, getPlayersInRoom, getRoomData, updatePlayerTurn} = require('./controllers/roomController');
 const { updateRoomsList } = require('./utils/socketHelpers');
 
 const app = express();
@@ -109,31 +109,28 @@ io.on('connection', (socket) => {
   });
 
   socket.on('adminStartGame', (roomName) => {
-    const room = getRoomByName(roomName);
-    if (!room) {
-        socket.emit('error', 'Room not found'); // Apenas o admin recebe
-        return;
-    }
+      const room = getRoomByName(roomName);
+      if (!room) {
+          socket.emit('error', 'Room not found');
+          return;
+      }
 
-    if (room.currentPlayersIds.length !== 4) {
-        socket.emit('error', 'Room must have exactly 4 players to start the game.'); // Apenas o admin recebe
-        return;
-    }
+      if (room.currentPlayersIds.length !== 4) {
+          socket.emit('error', 'Room must have exactly 4 players to start the game.');
+          return;
+      }
 
-    // Embaralhar a ordem dos jogadores
-    room.playerTurnOrder = room.playerTurnOrder.sort(() => Math.random() - 0.5);
+      // Embaralhar a ordem dos jogadores
+      room.playerTurnOrder = room.playerTurnOrder.sort(() => Math.random() - 0.5);
 
-    // Atualizar o primeiro jogador no turno
-    room.currentPlayerTurn = room.playerTurnOrder[0];
+      // Iniciar o jogo e definir o primeiro jogador no turno
+      room.startGame(users);
 
-    // Emitir evento para iniciar o jogo
-
-    
-    console.log(room.playerTurnOrder)
-    io.to(roomName).emit('startGame', {
-      currentPlayerTurn: room.currentPlayerTurn,
-      playerTurnOrder: room.playerTurnOrder,
-    });
+      io.to(roomName).emit('startGame', {
+          currentPlayerTurn: room.currentPlayerTurn, // Enviar dados completos do jogador
+          playerTurnOrder: room.playerTurnOrder, // Manter a ordem dos IDs
+      });
+      io.to(roomName).emit('updateRoomData', getRoomData(roomName, users));
   });
 
   socket.on('rollTheDice', ({ roomName, username }, callback) => {
@@ -146,6 +143,23 @@ io.on('connection', (socket) => {
     // Confirmar sucesso para o player que fez o roll
     callback({ success: true, rollResult });
   });
+
+  socket.on('updatePlayerTurn', (roomName) => {
+      const result = updatePlayerTurn(roomName, users);
+    
+      if (result.success) {
+          io.to(roomName).emit('updateRoomData', getRoomData(roomName, users));
+          io.to(roomName).emit('message', {
+              userName: 'System',
+              message: `It's now ${result.currentPlayerTurn.username}'s turn.`,
+              isSystem: true,
+          });
+      } else {
+          socket.emit('error', result.message);
+      }
+  });
+
+  
 
   socket.on('disconnect', () => {
     const username = users.get(socket.id)?.username || 'Unknown Player';
