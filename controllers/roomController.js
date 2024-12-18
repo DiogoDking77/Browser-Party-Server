@@ -1,13 +1,15 @@
 const Room = require('../models/room');
 const rooms = new Map();
 
+const getRoomByName = (roomName) => rooms.get(roomName);
+
 const createRoom = (roomName, socket, users) => {
   if (rooms.has(roomName)) {
       return { success: false, message: 'Room already exists' };
   }
 
   const room = new Room(roomName);
-  room.addPlayer(socket.id, users); // Adicionar o criador da sala com atribuição de cor
+  room.addPlayer(socket.id, users);
   rooms.set(roomName, room);
 
   console.log('Room Created:', roomName);
@@ -41,6 +43,10 @@ const getRoomData = (roomName, users) => {
     adminPlayer: room.getAdminPlayer(users), // Retorna os dados do admin
     isOngoing: room.isOngoing,
     currentRound: room.currentRound,
+    currentPlayersIdsRank: room.currentPlayersIdsRank,
+    currentPlayerTurn: room.currentPlayerTurn,
+    playerTurnOrder: room.playerTurnOrder,
+    availableColors: room.availableColors,
     players,
   };
 
@@ -130,14 +136,24 @@ const getPlayersInRoom = (roomName, users) => {
   return { success: true, message: 'Players retrieved successfully', players };
 };
 
+const updatePlayerTurn = (roomName, users) => {
+  const room = rooms.get(roomName);
+  if (!room) {
+      return { success: false, message: 'Room not found' };
+  }
 
+  room.nextTurn(users); // Atualiza o turno com os dados completos do jogador
+  return { success: true, message: 'Player turn updated', currentPlayerTurn: room.currentPlayerTurn };
+};
 
 module.exports = {
+  getRoomByName,
   createRoom,
   joinRoom,
   leaveRoom,
   getRoomsList,
   rooms,
   getPlayersInRoom, // Adicione esta exportação
-  getRoomData
+  getRoomData,
+  updatePlayerTurn
 };
