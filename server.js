@@ -149,17 +149,26 @@ io.on('connection', (socket) => {
     
       if (result.success) {
           io.to(roomName).emit('updateRoomData', getRoomData(roomName, users));
-          io.to(roomName).emit('message', {
+          io.to(roomName).emit('miniGameEvent', { isMinigameEvent: result.randomMinigame !== null })
+          console.log(result.randomMinigame)
+          if(result.randomMinigame){
+            io.to(roomName).emit('message', {
+              userName: 'System',
+              message: `New Round. It will be ${result.currentPlayerTurn.username}'s turn after the next Minigame: ${result.randomMinigame}.`,
+              isSystem: true,
+              isMinigameEvent: result.randomMinigame !== null
+            });
+          } else {
+            io.to(roomName).emit('message', {
               userName: 'System',
               message: `It's now ${result.currentPlayerTurn.username}'s turn.`,
               isSystem: true,
           });
+          } 
       } else {
           socket.emit('error', result.message);
       }
   });
-
-  
 
   socket.on('disconnect', () => {
     const username = users.get(socket.id)?.username || 'Unknown Player';

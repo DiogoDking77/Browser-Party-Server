@@ -138,13 +138,31 @@ const getPlayersInRoom = (roomName, users) => {
 
 const updatePlayerTurn = (roomName, users) => {
   const room = rooms.get(roomName);
+  let randomMinigame = null; // Use let para permitir reatribuição
+
   if (!room) {
       return { success: false, message: 'Room not found' };
   }
 
+  const currentIndex = room.playerTurnOrder.indexOf(room.currentPlayerTurn.id);
+  const nextIndex = (currentIndex + 1) % room.playerTurnOrder.length;
+
+  if (nextIndex === 0) {
+    room.currentRound += 1; // Incrementa o round
+    const minigames = ['Maze Runner', 'Color Match', 'Trivia Time', 'Speed Clicks'];
+    randomMinigame = minigames[Math.floor(Math.random() * minigames.length)];
+  }
+
   room.nextTurn(users); // Atualiza o turno com os dados completos do jogador
-  return { success: true, message: 'Player turn updated', currentPlayerTurn: room.currentPlayerTurn };
+  
+  return { 
+    success: true, 
+    message: 'Player turn updated', 
+    currentPlayerTurn: room.currentPlayerTurn, 
+    randomMinigame: randomMinigame 
+  };
 };
+
 
 module.exports = {
   getRoomByName,
