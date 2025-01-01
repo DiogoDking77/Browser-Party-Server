@@ -136,7 +136,7 @@ const getPlayersInRoom = (roomName, users) => {
   return { success: true, message: 'Players retrieved successfully', players };
 };
 
-const updatePlayerTurn = (roomName, users) => {
+const updatePlayerTurn = (roomName, users, io) => {
   const room = rooms.get(roomName);
   let randomMinigame = null; // Use let para permitir reatribuição
 
@@ -149,12 +149,17 @@ const updatePlayerTurn = (roomName, users) => {
 
   if (nextIndex === 0) {
     room.currentRound += 1; // Incrementa o round
-    const minigames = ['Maze Runner', 'Color Match', 'Trivia Time', 'Speed Clicks'];
-    randomMinigame = minigames[Math.floor(Math.random() * minigames.length)];
+    //const minigames = ['Maze Runner', 'Color Match', 'Trivia Time', 'Speed Clicks'];
+    const minigames = ['PenaltyShootOut'];
+    //randomMinigame = minigames[Math.floor(Math.random() * minigames.length)];
+    randomMinigame = 'PenaltyShootOut';
   }
+
 
   room.nextTurn(users); // Atualiza o turno com os dados completos do jogador
   
+  io.to(roomName).emit('miniGameEvent', { miniGameType: randomMinigame });
+
   return { 
     success: true, 
     message: 'Player turn updated', 

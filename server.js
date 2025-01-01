@@ -145,7 +145,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('updatePlayerTurn', (roomName) => {
-      const result = updatePlayerTurn(roomName, users);
+      const result = updatePlayerTurn(roomName, users, io);
     
       if (result.success) {
           io.to(roomName).emit('updateRoomData', getRoomData(roomName, users));
