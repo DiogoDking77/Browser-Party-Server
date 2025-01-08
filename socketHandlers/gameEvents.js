@@ -41,6 +41,11 @@ module.exports = (io, socket, users) => {
     callback({ success: true, rollResult });
   });
 
+  socket.on('triggerMiniGame', ({ roomName, miniGameType }) => {
+    console.log('Mini-game event triggered:', miniGameType);  // Verifique se este log aparece
+    io.to(roomName).emit('miniGameEventTime', { miniGameType });
+  });
+
   socket.on('updatePlayerTurn', (roomName) => {
     const result = updatePlayerTurn(roomName, users, io);
     
