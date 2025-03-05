@@ -10,6 +10,7 @@ class Client {
       this.currentUnit = null;
       this.magicCards = null;
       this.clientColor = null; // Novo atributo para a cor do cliente
+      this.currentPosition = { col: 0, row: 0 }; // Posição inicial (Start)
   }
 
   // Definir o nome de usuário
@@ -29,6 +30,7 @@ class Client {
       this.currentRoomId = null;
       this.clientColor = null; // Liberar a cor quando sair da sala
       this.resetGameStats();
+      this.currentPosition = { col: 0, row: 0 }; // Resetar para a posição inicial
   }
 
   // Resetar os atributos de jogo
@@ -38,6 +40,12 @@ class Client {
       this.nMiniGamesWon = null;
       this.currentUnit = null;
       this.magicCards = null;
+      this.currentPosition = { col: 0, row: 0 }; // Resetar para a posição inicial
+  }
+
+  // Atualizar a posição do peão
+  updatePosition(newPosition) {
+      this.currentPosition = newPosition;
   }
 }
 

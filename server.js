@@ -3,6 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const { calculatePawnPath } = require('./utils/boardLogic');
 
 // Carregar variáveis de ambiente do .env
 dotenv.config();
@@ -137,11 +138,44 @@ io.on('connection', (socket) => {
     const rollResult = Math.floor(Math.random() * 6) + 1; // Gera um número entre 1 e 6
     console.log(`${username} rolled a ${rollResult} in room ${roomName}`);
 
+    // Obter o jogador
+    const user = users.get(socket.id);
+    if (!user) {
+      callback({ success: false, message: 'Jogador não encontrado' });
+      return;
+    }
+
+    // Usar o currentUnit como posição inicial, ou a posição inicial (0,0) se não houver
+    const startPosition = user.currentUnit || { col: 0, row: 0 };
+
+    // Calcular o caminho do peão
+    const pathResult = calculatePawnPath(startPosition, rollResult);
+    console.log(pathResult);
+    
+    if (!pathResult.success) {
+      callback({ success: false, message: pathResult.message });
+      return;
+    }
+
+    // Atualizar a posição atual do jogador
+    user.updatePosition(pathResult.finalPosition);
+    user.currentUnit = pathResult.finalPosition;
+
     // Enviar o resultado para todos os players da sala
-    io.to(roomName).emit('DiceRoll', { username, rollResult });
+    io.to(roomName).emit('DiceRoll', { 
+      username, 
+      rollResult,
+      path: pathResult.path,
+      finalPosition: pathResult.finalPosition
+    });
 
     // Confirmar sucesso para o player que fez o roll
-    callback({ success: true, rollResult });
+    callback({ 
+      success: true, 
+      rollResult,
+      path: pathResult.path,
+      finalPosition: pathResult.finalPosition
+    });
   });
 
   socket.on('updatePlayerTurn', (roomName) => {
